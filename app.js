@@ -618,10 +618,10 @@ async function loadDefaultSong(url) {
     const checkResponse = await fetch('default.mp3', { method: 'HEAD' });
     if (checkResponse.ok) {
       setUrlStatus("ok", "Lagu default ditemukan secara lokal!");
-      loadAudio('default.mp3', 'Oke Gas 2', 'Richard Jersey');
+      loadAudio('default.mp3', 'Oke Gas Wok', 'Richard Jersey');
       setTimeout(() => {
         if (!isPlaying) {
-          setUrlStatus("ok", "Lagu default siap diputar: Oke Gas 2. Klik tombol Play!");
+          setUrlStatus("ok", "Lagu default siap diputar: Oke Gas Wok. Klik tombol Play!");
         }
       }, 1500);
       return;
@@ -695,7 +695,40 @@ async function fetchMediaForDefault(url, overrideBase = null, timeout = 7000) {
   });
 }
 
+// Function to enable autoplay on the first user interaction (click, touch, keypress)
+function setupAutoplayOnInteraction() {
+  const events = ['click', 'touchstart', 'keydown', 'mousedown'];
+  
+  const startAutoplay = () => {
+    // If audio has a source and is not yet playing
+    if (audioEl.src && !isPlaying) {
+      initAudio();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      audioEl.play().then(() => {
+        isPlaying = true;
+        document.getElementById("playBtn").textContent = "❚❚";
+        if (!rafId) drawLoop();
+        // Remove listeners
+        events.forEach(evt => document.removeEventListener(evt, startAutoplay));
+      }).catch(err => {
+        console.log("Autoplay failed on interaction event:", err);
+      });
+    }
+  };
+
+  events.forEach(evt => document.addEventListener(evt, startAutoplay));
+
+  // Also clean up listeners if the user manually clicks the play button before any other interactions
+  audioEl.addEventListener('play', () => {
+    events.forEach(evt => document.removeEventListener(evt, startAutoplay));
+  });
+}
+
 // Load the default song on startup
 loadDefaultSong('https://youtu.be/RxzBHZ7KCzg?si=IybWCbF2WTmoKOsP');
+setupAutoplayOnInteraction();
+
 
 

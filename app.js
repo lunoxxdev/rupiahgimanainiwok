@@ -718,18 +718,30 @@ function setupAutoplayOnInteraction() {
         document.getElementById("playBtn").textContent = "❚❚";
         if (!rafId) drawLoop();
         // Remove listeners
-        events.forEach(evt => document.removeEventListener(evt, startAutoplay));
+        events.forEach(evt => {
+          document.removeEventListener(evt, startAutoplay);
+          window.removeEventListener(evt, startAutoplay);
+          document.body.removeEventListener(evt, startAutoplay);
+        });
       }).catch(err => {
         console.log("Autoplay failed on interaction event:", err);
       });
     }
   };
 
-  events.forEach(evt => document.addEventListener(evt, startAutoplay));
+  events.forEach(evt => {
+    document.addEventListener(evt, startAutoplay);
+    window.addEventListener(evt, startAutoplay);
+    document.body.addEventListener(evt, startAutoplay);
+  });
 
   // Also clean up listeners if the user manually clicks the play button before any other interactions
   audioEl.addEventListener('play', () => {
-    events.forEach(evt => document.removeEventListener(evt, startAutoplay));
+    events.forEach(evt => {
+      document.removeEventListener(evt, startAutoplay);
+      window.removeEventListener(evt, startAutoplay);
+      document.body.removeEventListener(evt, startAutoplay);
+    });
   });
 }
 

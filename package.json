@@ -1,0 +1,11 @@
+{
+  "name": "spectrum-idr",
+  "version": "1.0.0",
+  "description": "IDR to USD Spectrum Audio Visualizer",
+  "scripts": {
+    "dev": "npx http-server -p 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

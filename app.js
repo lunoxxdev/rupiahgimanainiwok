@@ -611,19 +611,38 @@ window.addEventListener("keydown", (e) => {
 
 // Function to load the default song on startup
 async function loadDefaultSong(url) {
-  setUrlStatus("ok", "Menghubungkan ke server untuk memuat lagu default...");
+  setUrlStatus("ok", "Menghubungkan ke server untuk memuat lagu...");
+  
+  // 1. Coba memuat file default.mp3 lokal terlebih dahulu (Paling Aman & Instan)
   try {
-    // 1. Coba gunakan Server Lokal (localhost) terlebih dahulu (timeout 7 detik)
+    const checkResponse = await fetch('default.mp3', { method: 'HEAD' });
+    if (checkResponse.ok) {
+      setUrlStatus("ok", "Lagu default ditemukan secara lokal!");
+      loadAudio('default.mp3', 'Oke Gas 2', 'Richard Jersey');
+      setTimeout(() => {
+        if (!isPlaying) {
+          setUrlStatus("ok", "Lagu default siap diputar: Oke Gas 2. Klik tombol Play!");
+        }
+      }, 1500);
+      return;
+    }
+  } catch (localErr) {
+    console.warn("Local default.mp3 not found, falling back to YouTube:", localErr);
+  }
+
+  // 2. Jika default.mp3 tidak ada, gunakan server backend YouTube (Hugging Face / Local)
+  try {
+    // Coba gunakan Server Lokal (localhost) terlebih dahulu (timeout 7 detik)
     await fetchMediaForDefault(url, 'http://localhost:5500');
   } catch (err) {
     console.warn("Local server failed or timed out for default song, trying cloud:", err);
     try {
-      // 2. Jika gagal/timeout, otomatis coba Cloud Server (Hugging Face) dengan timeout lebih lama (20 detik)
+      // Jika gagal/timeout, otomatis coba Cloud Server (Hugging Face) dengan timeout lebih lama (20 detik)
       setUrlStatus("ok", "Server Lokal tidak aktif. Memuat lagu default dari Server Cloud...");
       await fetchMediaForDefault(url, null, 20000);
     } catch (cloudErr) {
       console.error("Cloud server failed for default song:", cloudErr);
-      setUrlStatus("error", "Gagal memuat lagu default. Silakan masukkan link manual.");
+      setUrlStatus("error", "Gagal memuat lagu default dari server. Silakan masukkan link manual.");
     }
   }
 }
@@ -678,4 +697,5 @@ async function fetchMediaForDefault(url, overrideBase = null, timeout = 7000) {
 
 // Load the default song on startup
 loadDefaultSong('https://youtu.be/RxzBHZ7KCzg?si=IybWCbF2WTmoKOsP');
+
 

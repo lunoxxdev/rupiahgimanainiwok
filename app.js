@@ -52,7 +52,13 @@ function loadAudio(url, title, artist) {
   }).catch(err => {
     isPlaying = false;
     document.getElementById("playBtn").textContent = "▶";
-    setUrlStatus("error", `Gagal memuat audio. ${err.message}. Pastikan URL adalah file audio langsung dan server mengizinkan CORS.`);
+    
+    // Jika diblokir autoplay browser (NotAllowedError), jangan tampilkan sebagai error merah.
+    if (err.name === "NotAllowedError" || err.message.includes("gesture") || err.message.includes("allow")) {
+      setUrlStatus("ok", `Lagu siap diputar: ${title}. Ketuk layar atau klik Play untuk mendengarkan!`);
+    } else {
+      setUrlStatus("error", `Gagal memuat audio. ${err.message}. Pastikan URL adalah file audio langsung dan server mengizinkan CORS.`);
+    }
   });
 }
 
@@ -697,7 +703,8 @@ async function fetchMediaForDefault(url, overrideBase = null, timeout = 7000) {
 
 // Function to enable autoplay on the first user interaction (click, touch, keypress)
 function setupAutoplayOnInteraction() {
-  const events = ['click', 'touchstart', 'keydown', 'mousedown'];
+  // Gunakan 'touchend' sebagai pengganti 'touchstart' karena iOS memblokir play() pada event 'touchstart'
+  const events = ['click', 'touchend', 'keydown', 'mousedown'];
   
   const startAutoplay = () => {
     // If audio has a source and is not yet playing
